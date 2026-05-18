@@ -74,6 +74,24 @@ async function renderAlerts() {
           iconClass = 'bi-arrow-repeat text-primary';
       }
 
+      let completionHtml = '';
+      if (a.status === 'Completed' && a.completion_date) {
+        completionHtml += `
+          <div class="d-flex justify-content-between mb-1 mt-1 border-top pt-1 text-xs">
+            <span class="text-muted">Completed On:</span>
+            <span class="fw-semibold text-success">${new Date(a.completion_date).toLocaleDateString()}</span>
+          </div>
+        `;
+      }
+      if (a.remarks) {
+        completionHtml += `
+          <div class="mt-1 border-top pt-1 text-xs">
+            <span class="text-muted d-block mb-1">Remarks / Progress:</span>
+            <div class="p-2 bg-light border rounded text-dark text-xs" style="white-space: pre-wrap;">${a.remarks}</div>
+          </div>
+        `;
+      }
+
       container.innerHTML += `
         <div class="col-md-6 col-lg-4">
           <div class="card bg-surface border-0 shadow-sm h-100 alert-card">
@@ -96,12 +114,13 @@ async function renderAlerts() {
                 </div>
                 <div class="d-flex justify-content-between">
                   <span class="text-muted">Assigned IO:</span>
-                  <span class="fw-medium">${a.assigned_io_name || 'Unassigned'}</span>
+                  <span class="fw-medium">${a.assigned_to_name || 'Unassigned'}</span>
                 </div>
+                ${completionHtml}
               </div>
               
               <div class="mt-auto pt-3 border-top">
-                <button class="btn btn-sm btn-outline-primary w-100" onclick="openAssignModal(${a.id}, '${a.assigned_to || ''}', '${a.status}')">
+                <button class="btn btn-sm btn-outline-primary w-100" onclick="openAssignModal(${a.id}, '${a.assigned_to || ''}', '${a.status}', '${(a.remarks || '').replace(/'/g, "\\'")}', '${a.completion_date || ''}')">
                   <i class="bi bi-pencil-square me-1"></i> Update / Assign
                 </button>
               </div>
@@ -120,10 +139,45 @@ async function renderAlerts() {
   }
 }
 
-function openAssignModal(id, currentAssignedTo, currentStatus) {
+function toggleCompletionFields() {
+  const status = document.getElementById('alertStatus').value;
+  const compGroup = document.getElementById('completionDateGroup');
+  const compInput = document.getElementById('completionDate');
+  
+  if (status === 'Completed') {
+    compGroup.style.display = 'block';
+    compInput.setAttribute('required', 'required');
+    if (!compInput.value) {
+      compInput.value = new Date().toISOString().split('T')[0];
+    }
+  } else {
+    compGroup.style.display = 'none';
+    compInput.removeAttribute('required');
+  }
+}
+
+function openAssignModal(id, currentAssignedTo, currentStatus, currentRemarks = '', currentCompletionDate = '') {
   document.getElementById('alertId').value = id;
   document.getElementById('assignedTo').value = currentAssignedTo;
   document.getElementById('alertStatus').value = currentStatus;
+  document.getElementById('alertRemarks').value = currentRemarks;
+  
+  if (currentCompletionDate) {
+    document.getElementById('completionDate').value = currentCompletionDate.split('T')[0];
+  } else {
+    document.getElementById('completionDate').value = '';
+  }
+  
+  // Disable assigning if the user is an Investigation Officer
+  const user = JSON.parse(localStorage.getItem('eow_user') || '{}');
+  const isIo = user.role && user.role.toLowerCase() === 'investigation officer';
+  if (isIo) {
+    document.getElementById('assignedTo').disabled = true;
+  } else {
+    document.getElementById('assignedTo').disabled = false;
+  }
+  
+  toggleCompletionFields();
   
   const modal = new bootstrap.Modal(document.getElementById('assignAlertModal'));
   modal.show();
@@ -133,9 +187,16 @@ async function saveAlertUpdate() {
   const id = document.getElementById('alertId').value;
   const assigned_to = document.getElementById('assignedTo').value;
   const status = document.getElementById('alertStatus').value;
+  const completion_date = document.getElementById('completionDate').value;
+  const remarks = document.getElementById('alertRemarks').value;
   
   if(!assigned_to) {
     App.showToast('Please specify an Investigation Officer', 'danger');
+    return;
+  }
+
+  if (status === 'Completed' && !completion_date) {
+    App.showToast('Please enter the completion date', 'danger');
     return;
   }
   
@@ -144,14 +205,11 @@ async function saveAlertUpdate() {
   btn.innerHTML = 'Updating...';
   
   try {
-    // Only sending assigned_to and status
-    // Backend update requires full schema fields though? Let's check backend alert update.
-    // If backend doesn't support partial update we might need to send everything. 
-    // Backend alert update: const { alert_type, priority, deadline, status, assigned_to } = updateData;
-    // Actually, backend update usually merges. Wait, Drizzle update sets what is passed.
     await App.apiCall(`/alerts/${id}`, 'PUT', {
       status,
-      assigned_to: parseInt(assigned_to)
+      assigned_to: parseInt(assigned_to),
+      completion_date: status === 'Completed' ? completion_date : null,
+      remarks: remarks || null
     });
     
     const modalEl = document.getElementById('assignAlertModal');

@@ -95,11 +95,19 @@
             </div>
             <div class="mb-3">
               <label class="form-label">Update Status</label>
-              <select class="form-select" id="alertStatus" required>
+              <select class="form-select" id="alertStatus" required onchange="toggleCompletionFields()">
                 <option value="Pending">Pending</option>
                 <option value="In Progress">In Progress</option>
                 <option value="Completed">Completed</option>
               </select>
+            </div>
+            <div class="mb-3" id="completionDateGroup" style="display: none;">
+              <label class="form-label required-label">Completion Date</label>
+              <input type="date" class="form-control" id="completionDate">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Remarks / Progress Details</label>
+              <textarea class="form-control" id="alertRemarks" rows="3" placeholder="Enter status update details, action items completed..."></textarea>
             </div>
           </form>
         </div>

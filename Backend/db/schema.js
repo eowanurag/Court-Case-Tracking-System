@@ -77,6 +77,8 @@ const alerts = pgTable('alerts', {
   priority: varchar('priority', { length: 20 }).default('Medium'),
   status: varchar('status', { length: 50 }).default('Pending'),
   deadline: date('deadline'),
+  completion_date: date('completion_date'),
+  remarks: text('remarks'),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });

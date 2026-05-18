@@ -41,6 +41,8 @@ const alertModel = {
       priority: alerts.priority,
       status: alerts.status,
       deadline: alerts.deadline,
+      completion_date: alerts.completion_date,
+      remarks: alerts.remarks,
       created_at: alerts.created_at,
       updated_at: alerts.updated_at,
       full_fir_no: firCases.full_fir_no,
@@ -60,13 +62,15 @@ const alertModel = {
   },
 
   update: async (id, updateData) => {
-    const { status, assigned_to } = updateData;
+    const { status, assigned_to, completion_date, remarks } = updateData;
     
     // We only update the fields provided, but Drizzle uses undefined to ignore fields.
     // However, JS object destructuring handles this. Let's build the set object.
     const updateObj = { updated_at: new Date() };
     if (status !== undefined) updateObj.status = status;
     if (assigned_to !== undefined) updateObj.assigned_to = assigned_to;
+    if (completion_date !== undefined) updateObj.completion_date = completion_date;
+    if (remarks !== undefined) updateObj.remarks = remarks;
 
     const [alert] = await db.update(alerts)
       .set(updateObj)
