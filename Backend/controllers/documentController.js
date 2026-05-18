@@ -10,7 +10,7 @@ const uploadDocument = async (req, res, next) => {
       return errorResponse(res, 400, 'Please upload a file');
     }
 
-    const { fir_id, document_type, title } = req.body;
+    const { fir_id, hearing_id, document_type, title } = req.body;
     
     // Validate FIR exists
     const fir = await firModel.findById(fir_id);
@@ -25,6 +25,7 @@ const uploadDocument = async (req, res, next) => {
 
     const docData = {
       fir_id,
+      hearing_id: hearing_id ? parseInt(hearing_id) : null,
       document_type,
       file_name,
       file_url,
@@ -43,9 +44,21 @@ const uploadDocument = async (req, res, next) => {
 
 const getDocuments = async (req, res, next) => {
   try {
-    const { fir_id, document_type } = req.query;
+    const { fir_id, hearing_id, document_type } = req.query;
     
-    const filters = { fir_id, document_type };
+    const userRole = req.user.role.toLowerCase();
+    let filterIoId = null;
+
+    if (userRole === 'investigation officer') {
+      filterIoId = req.user.id;
+    }
+
+    const filters = { 
+      fir_id: fir_id ? parseInt(fir_id) : undefined, 
+      hearing_id: hearing_id ? parseInt(hearing_id) : undefined,
+      document_type, 
+      io_id: filterIoId 
+    };
 
     const documents = await documentModel.findAll(filters);
     return successResponse(res, 200, 'Documents fetched successfully', { documents });

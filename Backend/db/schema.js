@@ -85,6 +85,7 @@ const documents = pgTable('documents', {
   id: serial('id').primaryKey(),
   uuid: uuid('uuid').defaultRandom().unique(),
   fir_id: integer('fir_id').references(() => firCases.id, { onDelete: 'cascade' }),
+  hearing_id: integer('hearing_id').references(() => hearings.id, { onDelete: 'cascade' }),
   document_type: varchar('document_type', { length: 100 }).notNull(),
   file_name: varchar('file_name', { length: 255 }).notNull(),
   file_url: varchar('file_url', { length: 500 }).notNull(),
@@ -132,7 +133,7 @@ const firCasesRelations = relations(firCases, ({ one, many }) => ({
   documents: many(documents),
 }));
 
-const hearingsRelations = relations(hearings, ({ one }) => ({
+const hearingsRelations = relations(hearings, ({ one, many }) => ({
   firCase: one(firCases, {
     fields: [hearings.fir_id],
     references: [firCases.id],
@@ -141,6 +142,7 @@ const hearingsRelations = relations(hearings, ({ one }) => ({
     fields: [hearings.updated_by],
     references: [users.id],
   }),
+  documents: many(documents),
 }));
 
 const alertsRelations = relations(alerts, ({ one }) => ({
@@ -158,6 +160,10 @@ const documentsRelations = relations(documents, ({ one }) => ({
   firCase: one(firCases, {
     fields: [documents.fir_id],
     references: [firCases.id],
+  }),
+  hearing: one(hearings, {
+    fields: [documents.hearing_id],
+    references: [hearings.id],
   }),
   uploadedBy: one(users, {
     fields: [documents.uploaded_by],

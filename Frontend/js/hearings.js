@@ -129,8 +129,14 @@ async function viewTimeline(firId, firNo) {
   ul.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>';
   
   try {
-    const response = await App.apiCall(`/hearings?fir_id=${firId}`);
-    const timelineHearings = response.data.hearings || [];
+    // Fetch hearings and documents in parallel
+    const [hearingsRes, docsRes] = await Promise.all([
+      App.apiCall(`/hearings?fir_id=${firId}`),
+      App.apiCall(`/documents?fir_id=${firId}`)
+    ]);
+    
+    const timelineHearings = hearingsRes.data.hearings || [];
+    const docs = docsRes.data.documents || [];
     
     document.getElementById('timeline-subtitle').innerText = `${timelineHearings.length} records found`;
     ul.innerHTML = '';
@@ -144,6 +150,28 @@ async function viewTimeline(firId, firNo) {
       const badgeClass = getBadgeClassForStatus(h.court_status);
       const nextStr = h.next_hearing_date ? new Date(h.next_hearing_date).toLocaleDateString() : 'None';
       
+      // Filter documents belonging to this hearing
+      const hearingDocs = docs.filter(d => d.hearing_id === h.id);
+      let docsHtml = '';
+      if (hearingDocs.length > 0) {
+        docsHtml += '<div class="mt-2 pt-2 border-top"><strong class="small d-block mb-1 text-muted"><i class="bi bi-paperclip me-1"></i>Attached Documents:</strong>';
+        hearingDocs.forEach(d => {
+          const isPdf = d.file_url.toLowerCase().endsWith('.pdf');
+          const iconClass = isPdf ? 'bi-file-earmark-pdf text-danger' : 'bi-file-earmark-image text-primary';
+          const backendOrigin = BACKEND_BASE_URL.replace(/\/api$/, '');
+          const fileUrl = `${backendOrigin}${d.file_url}`;
+          docsHtml += `
+            <div class="mt-1">
+              <a href="${fileUrl}" target="_blank" class="text-decoration-none small d-inline-flex align-items-center gap-1 bg-light border rounded px-2 py-1 text-dark hover-accent" style="font-size: 0.75rem;">
+                <i class="bi ${iconClass}"></i>
+                <span class="text-truncate text-dark" style="max-width: 200px;" title="${d.file_name}">${d.file_name}</span>
+              </a>
+            </div>
+          `;
+        });
+        docsHtml += '</div>';
+      }
+      
       ul.innerHTML += `
         <li class="timeline-item">
           <div class="timeline-icon text-primary"><i class="bi bi-calendar-check text-accent"></i></div>
@@ -153,7 +181,8 @@ async function viewTimeline(firId, firNo) {
               <span class="badge ${badgeClass}">${h.court_status}</span>
             </div>
             <p class="mb-2 text-sm">${h.remarks}</p>
-            <div class="d-flex justify-content-between text-muted" style="font-size: 0.8rem;">
+            ${docsHtml}
+            <div class="d-flex justify-content-between text-muted mt-2" style="font-size: 0.8rem;">
               <span>Next: ${nextStr}</span>
               <span>By: ${h.updated_by_name || 'System'}</span>
             </div>
@@ -162,6 +191,7 @@ async function viewTimeline(firId, firNo) {
       `;
     });
   } catch (err) {
+    console.error('Failed to load timeline', err);
     ul.innerHTML = '<div class="text-center text-danger py-5"><p>Failed to load timeline</p></div>';
   }
 }
@@ -173,6 +203,8 @@ async function saveHearing() {
   const court_status = document.getElementById('courtStatus').value;
   const remarks = document.getElementById('remarks').value;
   const generateAlert = document.getElementById('generateAlert').checked;
+  const fileInput = document.getElementById('hearingFile');
+  const hasFile = fileInput && fileInput.files.length > 0;
   
   if(!fir_id || !hearing_date || !court_status || !remarks) {
     App.showToast('Please fill all required fields', 'danger');
@@ -184,13 +216,26 @@ async function saveHearing() {
   btn.innerHTML = 'Saving...';
   
   try {
-    await App.apiCall('/hearings', 'POST', {
+    const response = await App.apiCall('/hearings', 'POST', {
       fir_id: parseInt(fir_id),
       hearing_date,
       next_hearing_date: next_hearing_date || null,
       court_status,
       remarks
     });
+    
+    // Upload attached file if present
+    if (hasFile && response.success && response.data.hearing && response.data.hearing.id) {
+      const newHearingId = response.data.hearing.id;
+      const formData = new FormData();
+      formData.append('fir_id', fir_id);
+      formData.append('hearing_id', newHearingId);
+      formData.append('document_type', 'Court Order');
+      formData.append('title', `Court Order - Hearing ${new Date(hearing_date).toLocaleDateString()}`);
+      formData.append('documentFile', fileInput.files[0]);
+      
+      await App.apiCall('/documents/upload', 'POST', formData);
+    }
     
     // Auto-generate Alert if checked
     if(generateAlert) {
