@@ -47,7 +47,8 @@ async function renderDocuments() {
     docs.forEach(d => {
       const isPdf = d.file_url.toLowerCase().endsWith('.pdf');
       const iconClass = isPdf ? 'bi-file-earmark-pdf text-danger' : 'bi-file-earmark-image text-primary';
-      const fileUrl = `http://localhost:5001${d.file_url}`;
+      const backendOrigin = BACKEND_BASE_URL.replace(/\/api$/, '');
+      const fileUrl = `${backendOrigin}${d.file_url}`;
 
       grid.innerHTML += `
         <div class="col-xl-3 col-lg-4 col-md-6">

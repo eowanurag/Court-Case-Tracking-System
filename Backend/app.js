@@ -33,6 +33,14 @@ app.use('/api/alerts', require('./routes/alertRoutes'));
 app.use('/api/documents', require('./routes/documentRoutes'));
 app.use('/api/reports', require('./routes/reportRoutes'));
 
+// Root/health check route
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Court Case Tracking System API is running successfully!'
+  });
+});
+
 // 404 handler
 app.use((req, res, next) => {
   res.status(404).json({ success: false, message: 'Resource not found' });
