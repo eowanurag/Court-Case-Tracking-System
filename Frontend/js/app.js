@@ -1,5 +1,5 @@
 // Core application utilities
-const BACKEND_BASE_URL = 'http://localhost:5001/api';
+const BACKEND_BASE_URL = 'https://court-case-tracking-system-vl23.onrender.com/api';
 
 const App = {
   init: async function() {
