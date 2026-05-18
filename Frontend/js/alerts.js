@@ -158,7 +158,6 @@ function toggleCompletionFields() {
 
 function openAssignModal(id, currentAssignedTo, currentStatus, currentRemarks = '', currentCompletionDate = '') {
   document.getElementById('alertId').value = id;
-  document.getElementById('assignedTo').value = currentAssignedTo;
   document.getElementById('alertStatus').value = currentStatus;
   document.getElementById('alertRemarks').value = currentRemarks;
   
@@ -168,13 +167,20 @@ function openAssignModal(id, currentAssignedTo, currentStatus, currentRemarks = 
     document.getElementById('completionDate').value = '';
   }
   
-  // Disable assigning if the user is an Investigation Officer
   const user = JSON.parse(localStorage.getItem('eow_user') || '{}');
   const isIo = user.role && user.role.toLowerCase() === 'investigation officer';
+  const selectEl = document.getElementById('assignedTo');
+  
   if (isIo) {
-    document.getElementById('assignedTo').disabled = true;
+    // Ensure the IO is selected and option is present
+    if (!selectEl.querySelector(`option[value="${user.id}"]`)) {
+      selectEl.innerHTML += `<option value="${user.id}">${user.name}</option>`;
+    }
+    selectEl.value = user.id;
+    selectEl.disabled = true;
   } else {
-    document.getElementById('assignedTo').disabled = false;
+    selectEl.value = currentAssignedTo || '';
+    selectEl.disabled = false;
   }
   
   toggleCompletionFields();
@@ -185,7 +191,14 @@ function openAssignModal(id, currentAssignedTo, currentStatus, currentRemarks = 
 
 async function saveAlertUpdate() {
   const id = document.getElementById('alertId').value;
-  const assigned_to = document.getElementById('assignedTo').value;
+  const user = JSON.parse(localStorage.getItem('eow_user') || '{}');
+  const isIo = user.role && user.role.toLowerCase() === 'investigation officer';
+  
+  let assigned_to = document.getElementById('assignedTo').value;
+  if (isIo) {
+    assigned_to = user.id; // Force set to logged in IO's ID
+  }
+  
   const status = document.getElementById('alertStatus').value;
   const completion_date = document.getElementById('completionDate').value;
   const remarks = document.getElementById('alertRemarks').value;
