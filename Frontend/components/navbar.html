@@ -1,0 +1,20 @@
+<button id="sidebar-toggle" title="Toggle Sidebar">
+  <i class="bi bi-list"></i>
+</button>
+<div class="navbar-user">
+  <button id="theme-toggle" class="btn btn-sm btn-outline-secondary border-0" title="Toggle Dark/Light Mode">
+    <i class="bi bi-moon-fill"></i>
+  </button>
+  <div class="dropdown">
+    <button class="btn btn-light dropdown-toggle border-0 shadow-none d-flex align-items-center gap-2" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="background:transparent;">
+      <i class="bi bi-person-circle fs-5 text-primary"></i>
+      <span class="d-none d-md-inline" id="navbar-username">User</span>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+      <li><span class="dropdown-item-text text-muted small" id="navbar-role">Role</span></li>
+      <li><hr class="dropdown-divider"></li>
+      <li><a class="dropdown-item" href="profile.html">Profile Settings</a></li>
+      <li><a class="dropdown-item text-danger" href="#" id="logout-btn">Logout</a></li>
+    </ul>
+  </div>
+</div>

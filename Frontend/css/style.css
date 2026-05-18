@@ -1,0 +1,128 @@
+:root {
+  /* Aesthetic Government Style Palette */
+  --gov-primary: #1a365d; /* Deep Navy Blue */
+  --gov-secondary: #475569; /* Slate Gray */
+  --gov-accent: #b4975a; /* Official Gold/Brass */
+  --gov-accent-hover: #9c8046;
+  --gov-bg: #f8fafc; /* Light Gray Background */
+  --gov-surface: #ffffff;
+  --gov-text-main: #1e293b;
+  --gov-text-muted: #64748b;
+  --gov-border: #e2e8f0;
+  
+  --gov-success: #15803d;
+  --gov-danger: #b91c1c;
+  --gov-warning: #b45309;
+  --gov-info: #0369a1;
+
+  --sidebar-width: 250px;
+  --sidebar-collapsed-width: 70px;
+  --navbar-height: 60px;
+  
+  --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+[data-theme="dark"] {
+  --gov-bg: #0f172a;
+  --gov-surface: #1e293b;
+  --gov-text-main: #f8fafc;
+  --gov-text-muted: #94a3b8;
+  --gov-border: #334155;
+  --gov-primary: #1e293b;
+  --gov-secondary: #cbd5e1;
+}
+
+body {
+  font-family: var(--font-family-sans);
+  background-color: var(--gov-bg);
+  color: var(--gov-text-main);
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  color: var(--gov-text-main);
+}
+
+a {
+  color: var(--gov-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--gov-accent);
+}
+
+/* Base Form Styling */
+.form-control, .form-select {
+  background-color: var(--gov-surface);
+  color: var(--gov-text-main);
+  border-color: var(--gov-border);
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--gov-accent);
+  box-shadow: 0 0 0 0.25rem rgba(180, 151, 90, 0.25);
+  background-color: var(--gov-surface);
+  color: var(--gov-text-main);
+}
+
+.required-label::after {
+  content: " *";
+  color: var(--gov-danger);
+  font-weight: bold;
+}
+
+/* Primary Button */
+.btn-primary {
+  background-color: var(--gov-primary);
+  border-color: var(--gov-primary);
+}
+
+.btn-primary:hover {
+  background-color: #112543;
+  border-color: #112543;
+}
+
+/* Accent Button */
+.btn-accent {
+  background-color: var(--gov-accent);
+  border-color: var(--gov-accent);
+  color: #fff;
+}
+
+.btn-accent:hover {
+  background-color: var(--gov-accent-hover);
+  border-color: var(--gov-accent-hover);
+  color: #fff;
+}
+
+/* Utility Classes */
+.text-accent { color: var(--gov-accent) !important; }
+.bg-primary-gov { background-color: var(--gov-primary) !important; color: white; }
+.bg-surface { background-color: var(--gov-surface) !important; }
+
+/* Loading Animation */
+.loader-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+[data-theme="dark"] .loader-overlay {
+  background: rgba(15, 23, 42, 0.8);
+}
+.spinner-border.text-accent {
+  color: var(--gov-accent) !important;
+}
+
+/* Badge Tweaks */
+.badge {
+  font-weight: 500;
+  padding: 0.5em 0.75em;
+}

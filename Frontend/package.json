@@ -1,0 +1,11 @@
+{
+  "name": "court-case-tracking-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for Legal Court Case Tracking System",
+  "scripts": {
+    "dev": "serve ."
+  },
+  "dependencies": {
+    "serve": "^14.2.1"
+  }
+}

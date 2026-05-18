@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Legal Court Case Tracking System</title>
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+  <div id="app-wrapper">
+    <!-- Sidebar dynamically loaded -->
+    <nav id="sidebar"></nav>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content">
+      <!-- Navbar dynamically loaded -->
+      <header id="top-navbar"></header>
+
+      <!-- Page Content -->
+      <main id="page-content">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+          <div>
+            <h2 class="h3 mb-0 text-primary-gov">Dashboard Overview</h2>
+            <nav aria-label="breadcrumb">
+              <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+              </ol>
+            </nav>
+          </div>
+          
+          <div class="d-flex align-items-end gap-2 bg-surface p-2 rounded shadow-sm border">
+            <div>
+              <label class="form-label small mb-1">Filter By</label>
+              <select id="stats-date-type" class="form-select form-select-sm">
+                <option value="hearing_date" selected>Hearing Date</option>
+                <option value="initial_date">Case Initial Date</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label small mb-1">Start Date</label>
+              <input type="date" id="stats-start-date" class="form-control form-control-sm">
+            </div>
+            <div>
+              <label class="form-label small mb-1">End Date</label>
+              <input type="date" id="stats-end-date" class="form-control form-control-sm">
+            </div>
+            <button class="btn btn-sm btn-primary" onclick="refreshDashboard()"><i class="bi bi-arrow-clockwise"></i></button>
+          </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-3 col-sm-6">
+            <a href="files.html" class="text-decoration-none">
+              <div class="dash-card">
+                <div class="dash-card-icon icon-blue">
+                  <i class="bi bi-folder-check"></i>
+                </div>
+                <h3 class="dash-card-value" id="count-files">0</h3>
+                <div class="dash-card-label">Investigation Files</div>
+              </div>
+            </a>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <a href="fir.html" class="text-decoration-none">
+              <div class="dash-card">
+                <div class="dash-card-icon icon-blue">
+                  <i class="bi bi-file-earmark-text"></i>
+                </div>
+                <h3 class="dash-card-value" id="count-firs">0</h3>
+                <div class="dash-card-label">FIR Cases</div>
+              </div>
+            </a>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <a href="hearings.html" class="text-decoration-none">
+              <div class="dash-card">
+                <div class="dash-card-icon icon-gold">
+                  <i class="bi bi-calendar-event"></i>
+                </div>
+                <h3 class="dash-card-value" id="count-hearings-today">0</h3>
+                <div class="dash-card-label">Today's Hearings</div>
+              </div>
+            </a>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <a href="alerts.html" class="text-decoration-none">
+              <div class="dash-card">
+                <div class="dash-card-icon icon-red">
+                  <i class="bi bi-bell-fill"></i>
+                </div>
+                <h3 class="dash-card-value" id="count-alerts">0</h3>
+                <div class="dash-card-label">Active Alerts</div>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-8">
+            <div class="card bg-surface border-0 shadow-sm h-100">
+              <div class="card-header bg-transparent border-bottom-0 pt-3 pb-0">
+                <h6 class="card-title mb-0">Case Status Overview</h6>
+              </div>
+              <div class="card-body">
+                <canvas id="statusChart" height="100"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card bg-surface border-0 shadow-sm h-100">
+              <div class="card-header bg-transparent border-bottom-0 pt-3 pb-0">
+                <h6 class="card-title mb-0">Sector-wise Distribution</h6>
+              </div>
+              <div class="card-body d-flex align-items-center justify-content-center">
+                <canvas id="sectorChart" height="200"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tables Row -->
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="card bg-surface border-0 shadow-sm h-100">
+              <div class="card-header bg-transparent d-flex justify-content-between align-items-center border-bottom pb-2 pt-3">
+                <h6 class="card-title mb-0">Upcoming Hearings</h6>
+                <a href="hearings.html" class="btn btn-sm btn-outline-primary">View All</a>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive border-0 m-0">
+                  <table class="table table-hover mb-0">
+                    <thead>
+                      <tr>
+                        <th>FIR No.</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="upcoming-hearings-tbody">
+                      <!-- Populated via JS -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card bg-surface border-0 shadow-sm h-100">
+              <div class="card-header bg-transparent d-flex justify-content-between align-items-center border-bottom pb-2 pt-3">
+                <h6 class="card-title mb-0">Recent Alerts</h6>
+                <a href="alerts.html" class="btn btn-sm btn-outline-danger">View All</a>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive border-0 m-0">
+                  <table class="table table-hover mb-0">
+                    <thead>
+                      <tr>
+                        <th>FIR No.</th>
+                        <th>Type</th>
+                        <th>Priority</th>
+                      </tr>
+                    </thead>
+                    <tbody id="recent-alerts-tbody">
+                      <!-- Populated via JS -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+      
+      <!-- Footer dynamically loaded -->
+      <div id="footer-container"></div>
+    </div>
+  </div>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Core Scripts -->
+  <script src="js/app.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
