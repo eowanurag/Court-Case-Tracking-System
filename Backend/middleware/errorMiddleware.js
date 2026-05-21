@@ -1,7 +1,13 @@
 const { errorResponse } = require('../utils/response');
 
 const errorHandler = (err, req, res, next) => {
-  console.error(err.stack);
+  console.error('\n========== ERROR DETECTED ==========');
+  console.error(`Method: ${req.method}`);
+  console.error(`URL: ${req.originalUrl}`);
+  console.error(`Status Code: ${err.statusCode || 500}`);
+  console.error(`Message: ${err.message || 'Server Error'}`);
+  console.error('Stack Trace:', err.stack || err);
+  console.error('====================================\n');
 
   let statusCode = err.statusCode || 500;
   let message = err.message || 'Server Error';

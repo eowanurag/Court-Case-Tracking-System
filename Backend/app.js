@@ -9,16 +9,49 @@ const app = express();
 
 // Security Middlewares
 app.use(helmet());
-app.use(cors());
+
+const allowedOrigins = [
+  'http://localhost:5500',
+  'https://localhost:5500',
+  'http://127.0.0.1:5500',
+  'https://127.0.0.1:5500',
+  'https://eowanurag.github.io'
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, or postman)
+    if (!origin) return callback(null, true);
+    
+    const cleanOrigin = origin.trim().replace(/\/$/, '');
+    if (allowedOrigins.includes(cleanOrigin) || cleanOrigin.startsWith('https://eowanurag.github.io')) {
+      return callback(null, true);
+    }
+    
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true
+}));
 
 // Parsing Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Logging Middleware
-if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
-}
+// Logging Middleware (Morgan for API response tracking)
+app.use(morgan('dev'));
+
+// Custom Entry/Exit API Request Tracking
+app.use((req, res, next) => {
+  const startTime = Date.now();
+  console.log(`\n>>> [API ENTRY] ${req.method} ${req.originalUrl} starting at ${new Date().toISOString()}`);
+  
+  res.on('finish', () => {
+    const duration = Date.now() - startTime;
+    console.log(`<<< [API EXIT] ${req.method} ${req.originalUrl} completed with Status: ${res.statusCode} inside ${duration}ms\n`);
+  });
+  
+  next();
+});
 
 // Static folder for uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

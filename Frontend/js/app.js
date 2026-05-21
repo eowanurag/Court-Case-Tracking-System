@@ -1,5 +1,10 @@
 // Core application utilities
-const BACKEND_BASE_URL = 'https://court-case-tracking-system-vl23.onrender.com/api';
+const LOCAL_BACKEND_URL = 'http://localhost:3000/api';
+const PROD_BACKEND_URL = 'https://court-case-tracking-system-vl23.onrender.com/api';
+
+const BACKEND_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? LOCAL_BACKEND_URL
+  : PROD_BACKEND_URL;
 
 const App = {
   init: async function() {
